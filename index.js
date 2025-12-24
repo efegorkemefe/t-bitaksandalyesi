@@ -1,662 +1,726 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Heart,
-  BookOpen,
-  PlusCircle,
-  Info,
-  Sparkles,
-  Gamepad2,
-  BookMarked,
+import { 
+  Heart, 
+  BookOpen, 
+  PlusCircle, 
+  Info, 
+  Sparkles, 
+  Gamepad2, 
+  BookMarked, 
   Users,
-  Search,
+  Search, 
   ChevronRight,
-  AlertCircle,
-  Moon,
+  Moon, 
   Sun,
   PenTool,
   Trophy,
   Filter,
   Eye,
-  MessageCircle,
+  Smile,
+  Send,
   Zap,
+  X,
+  MessageCircle,
+  ShieldCheck,
+  ChevronDown,
+  Lightbulb,
+  AlertCircle,
+  PlayCircle,
+  FileText,
+  Target,
+  UserX,
+  ZapOff,
+  LogIn,
+  UserPlus,
+  ArrowRight,
   Star,
+  Layers,
+  Fingerprint,
   User,
-  Award,
+  LogOut,
+  Home,
+  ExternalLink,
+  Plus,
+  Mail,
+  Lock,
+  ArrowLeft,
+  Github,
+  Chrome,
+  Share2,
   TrendingUp,
-  CheckCircle2
+  BrainCircuit,
+  Compass,
+  Briefcase,
+  Quote,
+  ShieldAlert,
+  HelpCircle,
+  CheckCircle2,
+  BookCopy,
+  Scale
 } from 'lucide-react';
 
 const App = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [view, setView] = useState('welcome'); 
   const [activeTab, setActiveTab] = useState('anlat');
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(true); 
   const [story, setStory] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState(null);
-  const [notification, setNotification] = useState(null);
+  const [analysisType, setAnalysisType] = useState(null); 
+  const [filterType, setFilterType] = useState('all'); 
+  const [expandedAcademy, setExpandedAcademy] = useState(null);
+  const [expandedWork, setExpandedWork] = useState(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [dailyTipIndex, setDailyTipIndex] = useState(0);
 
-  // Gamification State
-  const [userStats, setUserStats] = useState({
-    xp: 850,
-    level: 1,
-    nextLevelXp: 1000,
-    storiesRead: 3,
-    gamesPlayed: 1,
-    title: "Empati Çırağı",
-    badges: [
-      { id: 1, name: "İlk Adım", icon: <Star size={14} />, unlocked: true },
-      { id: 2, name: "Hikaye Anlatıcısı", icon: <PenTool size={14} />, unlocked: false },
-      { id: 3, name: "Topluluk Yıldızı", icon: <Users size={14} />, unlocked: false },
-    ]
-  });
+  // --- DATA ---
+  const dailyTips = [
+    "Sessiz kalmak onaylamak değildir, sadece bir savunma mekanizmasıdır.",
+    "Siber dünyada 'Engelle' butonu en güçlü kalkanındır.",
+    "Zorbalık senin hatan değil, zorbanın seçimidir.",
+    "Küçük bir destek mesajı, birinin dünyasını değiştirebilir."
+  ];
 
-  const [communityWorks] = useState([
-    {
-      id: 1,
-      title: "Sessiz Çığlık: Koridorun Sonu",
-      author: "Elif Demir",
-      type: "story",
-      category: "Okul Zorbalığı",
-      views: "1.2k",
-      likes: 450,
-      preview: "Okul koridorlarında başlayan o sessiz mücadelenin, bir dayanışma hikayesine dönüşümü..."
+  const communityWorks = [
+    { 
+      id: 1, 
+      title: "Sessiz Çığlık: Koridorun Sonu", 
+      author: "Elif Demir", 
+      type: "story", 
+      category: "Okul Zorbalığı", 
+      views: "1.2k", 
+      likes: 450, 
+      time: "2 dk önce",
+      preview: "Okul koridorlarında başlayan o sessiz mücadelenin, bir dayanışma hikayesine dönüşümü...", 
+      fullContent: "Bu hikaye, zorbalığa uğrayan bir gencin resim yeteneği sayesinde nasıl sesini duyurduğunu ve okuldaki diğer öğrencilerle nasıl bir empati ağı kurduğunu detaylarıyla anlatıyor.",
+      aiOverview: "Bu çalışma, sözel zorbalığa karşı 'Sanatsal Direniş' metodunu kullanıyor. Psikolojik dayanıklılık puanı: %85.",
+      stats: { empathy: 92, courage: 78, impact: 88 }
     },
-    {
-      id: 2,
-      title: "Pixel Guardian",
-      author: "Can Yılmaz",
-      type: "game",
-      category: "Siber Zorbalık",
-      views: "3.5k",
-      likes: 890,
-      preview: "Siber zorbalara karşı dijital kalkanını oluştur ve topluluğu koru! 5 seviyeli macera."
+    { 
+      id: 2, 
+      title: "Pixel Guardian", 
+      author: "Can Yılmaz", 
+      type: "game", 
+      category: "Siber Zorbalık", 
+      views: "3.5k", 
+      likes: 890, 
+      time: "15 dk önce",
+      preview: "Siber zorbalara karşı dijital kalkanını oluştur ve topluluğu koru!", 
+      fullContent: "Oyuncular, kötü niyetli mesajları filtreleyerek ve pozitif topluluk puanları toplayarak seviye atlıyor. Gerçek hayattaki dijital güvenlik kurallarını öğreten bir simülasyon.",
+      aiOverview: "Interaktif öğrenme modeli. Kullanıcıların %90'ı siber zorbalık raporlama süreçlerini bu oyunla kavradı.",
+      stats: { empathy: 65, courage: 94, impact: 91 }
     },
-    {
-      id: 3,
-      title: "Mavi Ekranın Ardındaki Gerçek",
-      author: "Umut Can Belgin",
-      type: "story",
-      category: "Siber Zorbalık",
-      views: "980",
-      likes: 310,
-      preview: "Bir oyun grubunda başlayan dışlanmanın, empati yoluyla nasıl çözüldüğünü anlatan bir günlük."
-    },
-    {
-      id: 4,
-      title: "Empati Labirenti",
-      author: "Selin Yıldız",
-      type: "game",
-      category: "Akran Zorbalığı",
-      views: "2.1k",
-      likes: 560,
-      preview: "Doğru kararları ver, labirentten çık ve arkadaşlık bağlarını güçlendir."
+    { 
+      id: 3, 
+      title: "İş Yerinde Yeni Sayfa", 
+      author: "Mert Ak", 
+      type: "story", 
+      category: "Mobbing", 
+      views: "850", 
+      likes: 210, 
+      time: "1 saat önce",
+      preview: "Ofis içindeki görünmez duvarları yıkmak üzerine bir başarı hikayesi.", 
+      fullContent: "Mobbinge maruz kalan bir çalışanın, yasal haklarını öğrenerek ve topluluk desteği alarak kariyerini nasıl koruduğunu anlatıyor.",
+      aiOverview: "Kurumsal farkındalık analizi: İş yeri etiği ve sınır koyma üzerine kritik veriler içerir.",
+      stats: { empathy: 70, courage: 88, impact: 75 }
     }
-  ]);
+  ];
 
-  const toggleDarkMode = () => setDarkMode(!darkMode);
+  const academyModules = [
+    { 
+      id: 1, 
+      title: "Siber Zorbalık 101", 
+      desc: "Dijital güvenlik ve etik.", 
+      icon: ShieldCheck, 
+      color: "text-blue-500", 
+      details: "İnternet ortamında anonimlik zırhının arkasına saklanan saldırganlara karşı dijital okuryazarlık ve özsavunma stratejileri geliştirme eğitimi.", 
+      fullDeep: "Siber zorbalık sadece mesajlardan ibaret değildir; dokslama (kişisel bilgi ifşası), dışlama ve kimlik taklidi gibi yöntemleri de kapsar. Bu modül, dijital ayak izinizi yönetmeyi ve teknolojik platformların raporlama mekanizmalarını en üst düzeyde kullanmayı öğretir.",
+      tips: ["Tüm dijital kanıtları (screenshot) tarih ve saatle kaydet", "Asla misilleme yapma, bu saldırganı besler", "Platformun güvenlik ayarlarını 'Yalnızca Arkadaşlar' olarak güncelle"], 
+      cases: "Vaka: Sosyal medyada başlatılan karalama kampanyasına karşı yasal süreç ve dijital itibar yönetimi.", 
+      resources: ["BTK Güvenli İnternet Rehberi", "Siber Suçlarla Mücadele Protokolleri", "Dijital Etik Kitapçığı"] 
+    },
+    { 
+      id: 2, 
+      title: "Sözel Şiddetle Mücadele", 
+      desc: "Kelimelerin gücünü kontrol et.", 
+      icon: MessageCircle, 
+      color: "text-purple-500", 
+      details: "Laf sokma, aşağılama ve alaycı söylemleri psikolojik olarak etkisiz kılma teknikleri.", 
+      fullDeep: "Sözel şiddet, mağdurun özsaygısını hedef alır. Bu modülde 'Gri Kaya' metodunu kullanarak saldırganın istediği duygusal tepkiyi vermemeyi ve sözlü manipülasyonları 'Ayna Tekniği' ile geri yansıtmayı öğreneceksiniz.",
+      tips: ["Sessiz kalmak yerine 'Neden böyle söyledin?' diye sorarak topu ona at", "Göz teması kurarak sakinliğini koru", "Duygusal tepki vermek yerine mantıksal sınırlar çiz"], 
+      cases: "Senaryo: İş veya okul ortamında sürekli maruz kalınan 'şaka' maskeli aşağılamalara karşı profesyonel sınır koyma.", 
+      resources: ["Şiddetsiz İletişim Rehberi", "Öfke Yönetimi ve Sözlü Özsavunma Podcast", "Atılganlık Eğitimi"] 
+    },
+    { 
+      id: 3, 
+      title: "Fiziksel Güvenlik & Alan", 
+      desc: "Güvenli alan oluşturma.", 
+      icon: Zap, 
+      color: "text-amber-500", 
+      details: "Fiziksel temas ve tehdit içeren durumlarda çevre bilinci ve kaçınma stratejileri.", 
+      fullDeep: "Fiziksel zorbalıkta ilk kural çatışmadan kaçınmak ve güvenli bölgeleri bilmektir. Bu modül, vücut dilinizi kullanarak caydırıcılık yaratmayı, kalabalık alanlarda konumlanmayı ve acil durumlarda yardım isteme protokollerini içerir.",
+      tips: ["Güvensiz hissettiğinde her zaman bir yetişkinin veya görevlinin olduğu tarafa yönel", "Fiziksel sınırlarını netleştir (Bana dokunma!)", "Kaçış rotalarını her zaman önceden belirle"], 
+      cases: "Rehber: Okul bahçesi veya sokakta fiziksel tehdit hissettiğinizde uygulanacak 5 adımlı güvenli uzaklaşma planı.", 
+      resources: ["Kişisel Sınırlar Eğitimi", "Güvenlik Haritalama Uygulaması", "Özsavunma Farkındalığı"] 
+    },
+    { 
+      id: 4, 
+      title: "Sosyal Dışlanma & İzolasyon", 
+      desc: "Topluluk içinde var olma.", 
+      icon: Users, 
+      color: "text-teal-500", 
+      details: "Gruplar tarafından kasten görmezden gelinme ve yalnızlaştırılma ile başa çıkma.", 
+      fullDeep: "Sosyal dışlanma beyinde fiziksel acı ile aynı merkezi uyarır. Bu modülde dışlanmanın yarattığı değersizlik hissini yıkmak için öz-şefkat pratikleri ve grup dinamiğini dışarıdan analiz etme becerileri kazandırılır.",
+      tips: ["Kendi ilgi alanlarına göre yeni sosyal çevreler ara", "Grup baskısını fark et ve bireysel değerlerini hatırla", "Yalnızlığın senin eksikliğin değil, grubun tercihi olduğunu kavra"], 
+      cases: "Analiz: Bir arkadaş grubundan aniden dışlanan bireyin, bu durumu yeni hobiler ve farklı bir çevreyle başarıya dönüştürmesi.", 
+      resources: ["Aidiyet ve Psikoloji Makalesi", "Grup Dinamiği Analiz Kitabı"] 
+    },
+    { 
+      id: 5, 
+      title: "Mobbing ve Kurumsal Etik", 
+      desc: "Kariyerini ve haklarını koru.", 
+      icon: Briefcase, 
+      color: "text-rose-500", 
+      details: "İş yerinde sistematik psikolojik taciz, yıldırma ve hiyerarşik baskı yönetimi.", 
+      fullDeep: "Mobbing ispatlanması zor ama yıkıcı bir süreçtir. Bu modülde mobbingin 45 farklı davranış biçimini (Leymann Envanteri) tanıyacak, kurumsal bildirim yollarını ve hukuki dosya hazırlamayı öğreneceksiniz.",
+      tips: ["Yapılan her haksızlığı tarih, saat ve şahitlerle 'Mobbing Günlüğü'ne işle", "İK ile yapacağın görüşmeleri yazılı talep et", "Duygusal sağlığın için profesyonel destek alırken yasal haklarını araştır"], 
+      cases: "Vaka: Performans baskısı adı altında yapılan psikolojik tacizin mahkeme aşamasında nasıl ispatlandığı.", 
+      resources: ["İş Kanunu Mobbing Maddeleri", "İK Raporlama Şablonu", "Sendikal Destek Rehberi"] 
+    },
+    { 
+      id: 6, 
+      title: "Duygusal Dayanıklılık (Resilience)", 
+      desc: "İçsel gücü yeniden inşa et.", 
+      icon: Heart, 
+      color: "text-pink-500", 
+      details: "Zorbalık sonrası travmayı yönetme ve psikolojik esneklik kazanma.", 
+      fullDeep: "Zorbalık geçse bile izleri kalabilir. Bu modül, 'Travma Sonrası Büyüme' kavramına odaklanarak yaşadıklarınızı bir kurban kimliğinden çıkarıp, hayatta kalan ve güçlenen bir kimliğe dönüştürmeyi hedefler.",
+      tips: ["Günlük yazarak duygularını dışa vur", "Zor anlarda 'Nefes Çapası' tekniğini kullan", "Kendini yargılamayı bırak, sen bir savaşçısın"], 
+      cases: "Pratik: Olumsuz iç konuşmaları ('Zayıfım', 'Hak ettim') yapıcı ifadelerle ('Zorlukla başa çıkıyorum') değiştirme egzersizi.", 
+      resources: ["Meditasyon Ses Kayıtları", "Dayanıklılık Testi", "Psikolojik Destek Portalı"] 
+    },
+    { 
+      id: 7, 
+      title: "Zorba Profil Analizi", 
+      desc: "Saldırganın psikolojisini anla.", 
+      icon: UserX, 
+      color: "text-slate-500", 
+      details: "Zorbaların neden bu davranışları sergilediğini anlayarak güç dengesini değiştirme.", 
+      fullDeep: "Zorbalık genellikle saldırganın kendi güvensizliklerinden ve geçmiş travmalarından kaynaklanır. Bu bilgi, zorbanın eylemlerini kişiselleştirmemenizi sağlar ve ondan korkmak yerine onu bir 'vaka' olarak görmenize yardımcı olur.",
+      tips: ["Onun öfkesinin seninle değil, kendisiyle ilgili olduğunu bil", "Güç gösterisini beslememek için tepkisiz kal", "Onu küçültmek yerine, kendi etki alanını büyüt"], 
+      cases: "Analiz: Akran zorbalığı yapan çocukların aile yapısı ve yetersizlik hissi üzerine bilimsel veriler.", 
+      resources: ["Davranış Bilimleri Makaleleri", "Narsizm ve Empati Eksikliği Paneli"] 
+    },
+    { 
+      id: 8, 
+      title: "Hukuk ve Adalet Rehberi", 
+      desc: "Yasal haklarını etkin kullan.", 
+      icon: Scale, 
+      color: "text-emerald-500", 
+      details: "TCK ve KVKK kapsamında zorbalığa karşı sahip olduğunuz kanuni yaptırımlar.", 
+      fullDeep: "Zorbalık bir suçtur. Bu modülde hakaret, tehdit, özel hayatın gizliliği ihlali ve kişisel verilerin korunması kanunlarını öğreneceksiniz. Şikayet dilekçesi nasıl yazılır, savcılık süreci nasıl işler detaylandırılmaktadır.",
+      tips: ["Delilleri karartmadan hemen koruma altına al", "Baroların adli yardım servislerine başvur", "Yasal süreci başlatmaktan çekinme, adalet senin yanında"], 
+      cases: "Örnek: Siber ortamda yayılan iftiraya karşı açılan tazminat davası ve sonuçları.", 
+      resources: ["Örnek Dilekçe Şablonları", "Adalet Bakanlığı Rehberi", "KVKK Temel Haklar"] 
+    },
+    { 
+      id: 9, 
+      title: "Tanık Olma & Müdahale Etme", 
+      desc: "Seyirci kalma, destek ol.", 
+      icon: Eye, 
+      color: "text-indigo-500", 
+      details: "Zorbalığa şahit olunduğunda güvenli bir şekilde nasıl müdahale edilir?", 
+      fullDeep: "Tanıkların sessizliği zorbanın en büyük yakıtıdır. Bu modül, 'Aktif Tanıklık' bilincini geliştirerek, kurbanın yanında durmanın ve otoriteye raporlamanın grup içindeki etkisini gösterir.",
+      tips: ["Olay anında kurbana yaklaş ve onunla konuşarak zorbanın odağını dağıt", "Sakin bir dille durumu yetkiliye bildir", "Asla 'Benimle ilgili değil' diyerek geçme"], 
+      cases: "Deney: Bir grup tanığın zorbalığa tepki vermesi durumunda olayın sonlanma hızı analizi.", 
+      resources: ["Tanıklık Eğitimi Videosu", "Toplumsal Sorumluluk Rehberi"] 
+    },
+    { 
+      id: 10, 
+      title: "Aile & Güven İletişimi", 
+      desc: "Yardım isteme sanatını geliştir.", 
+      icon: Home, 
+      color: "text-orange-500", 
+      details: "Ebeveynlere veya aile büyüklere durumu en doğru şekilde aktarma yolları.", 
+      fullDeep: "Zorbalığa maruz kalanlar genellikle 'Utanç' hissiyle ailelerine anlatmaktan çekinir. Bu modül, ailenizi suç ortağınız değil, kalkanınız olarak konumlandırmayı ve onlardan profesyonel destek talep etmeyi öğretir.",
+      tips: ["Durumu net ve abartısız bir dille anlat", "Hissiyatını paylaşmaktan çekinme (Korkuyorum, üzgünüm)", "Ortak bir çözüm planı talep et"], 
+      cases: "Vaka: Okulda dışlanan bir gencin, ailesiyle kurduğu doğru iletişim sayesinde okul değiştirmeden durumu çözmesi.", 
+      resources: ["Ebeveyn-Çocuk İletişim Rehberi", "Güven İnşası Pratikleri"] 
+    },
+  ];
 
-  const awardXP = (amount, reason) => {
-    setUserStats(prev => {
-      const newXP = prev.xp + amount;
-      const isLevelUp = newXP >= prev.nextLevelXp;
-
-      setNotification({
-        title: isLevelUp ? "Seviye Atladın!" : `+${amount} XP`,
-        message: isLevelUp ? `Tebrikler! Yeni seviyen: ${prev.level + 1}` : reason,
-        type: isLevelUp ? 'levelup' : 'xp'
-      });
-
-      // Clear notification after 3s
-      setTimeout(() => setNotification(null), 3000);
-
-      return {
-        ...prev,
-        xp: isLevelUp ? newXP - prev.nextLevelXp : newXP,
-        level: isLevelUp ? prev.level + 1 : prev.level,
-        nextLevelXp: isLevelUp ? Math.floor(prev.nextLevelXp * 1.5) : prev.nextLevelXp,
-        title: isLevelUp ? "Zorbalık Avcısı" : prev.title // Simple title logic for demo
-      };
-    });
+  const theme = {
+    dark: { bg: 'bg-[#030508]', card: 'bg-[#0A0F16]', border: 'border-[#16212E]', textPrimary: 'text-[#F1F5F9]', textSecondary: 'text-[#94A3B8]', buttonSecondary: 'bg-[#16212E]' },
+    light: { bg: 'bg-[#F8FAFC]', card: 'bg-white', border: 'border-slate-200', textPrimary: 'text-[#1E293B]', textSecondary: 'text-[#64748B]', buttonSecondary: 'bg-slate-100' }
   };
+
+  const currentTheme = darkMode ? theme.dark : theme.light;
 
   const handleAction = (type) => {
     if (!story.trim()) return;
     setIsAnalyzing(true);
-    setTimeout(() => {
-      setAnalysisResult({
-        type: type,
-        category: story.includes('internet') || story.includes('mesaj') ? "Siber Zorbalık" : "Akran Zorbalığı",
-        sentiment: "Dönüştürülebilir Duygu",
-        suggestion: type === 'story'
-          ? "Bu deneyimi bir Storybook'a (Hikaye Kitabı) dönüştürerek diğerlerine ışık tutabilirsin."
-          : "Bu deneyimi bir seviyeli oyuna dönüştürerek başkalarına çözüm yollarını öğretebilirsin."
-      });
-      setIsAnalyzing(false);
-      awardXP(300, type === 'story' ? 'Hikaye Tasarlandı' : 'Oyun Kurgulandı');
-    }, 1800);
+    setAnalysisType(type);
   };
 
-  const renderTabContent = () => {
+  const filteredWorks = filterType === 'all' ? communityWorks : communityWorks.filter(w => w.type === filterType);
+
+  // --- RENDER FUNCTIONS ---
+
+  const renderLoginScreen = () => (
+    <div className={`min-h-screen ${currentTheme.bg} flex flex-col max-w-md mx-auto animate-in slide-in-from-bottom-10 duration-500`}>
+      <header className="px-8 pt-14 pb-6">
+        <button onClick={() => setView('welcome')} className={`w-12 h-12 rounded-2xl border-2 ${currentTheme.border} ${currentTheme.card} ${currentTheme.textPrimary} flex items-center justify-center active:scale-90 transition-transform`}>
+          <ArrowLeft size={20} />
+        </button>
+      </header>
+      <div className="px-9 pt-6 space-y-10">
+        <div className="space-y-3">
+          <h2 className={`text-4xl font-black tracking-tighter ${currentTheme.textPrimary}`}>Tekrar Hoş Geldin.</h2>
+          <p className={`text-sm font-medium ${currentTheme.textSecondary}`}>Dönüşüm yolculuğuna kaldığın yerden devam et. Verilerin anonim olarak saklanır.</p>
+        </div>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className={`text-[10px] font-black uppercase tracking-widest px-1 ${currentTheme.textSecondary}`}>E-Posta</label>
+            <div className={`flex items-center gap-4 px-6 h-16 rounded-3xl border-2 ${currentTheme.border} ${currentTheme.card}`}>
+              <Mail size={18} className="text-blue-500" />
+              <input type="email" placeholder="ornek@mail.com" className={`bg-transparent outline-none flex-1 text-sm font-bold ${currentTheme.textPrimary}`} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className={`text-[10px] font-black uppercase tracking-widest px-1 ${currentTheme.textSecondary}`}>Şifre</label>
+            <div className={`flex items-center gap-4 px-6 h-16 rounded-3xl border-2 ${currentTheme.border} ${currentTheme.card}`}>
+              <Lock size={18} className="text-blue-500" />
+              <input type="password" placeholder="••••••••" className={`bg-transparent outline-none flex-1 text-sm font-bold ${currentTheme.textPrimary}`} />
+            </div>
+          </div>
+        </div>
+        <div className="space-y-4">
+          <button onClick={() => {setIsLoggedIn(true); setView('app');}} className="w-full h-16 rounded-3xl bg-blue-600 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-blue-900/40 active:scale-95 transition-all">Giriş Yap</button>
+          <div className="grid grid-cols-2 gap-4">
+            <button className={`h-14 rounded-2xl border-2 ${currentTheme.border} ${currentTheme.card} flex items-center justify-center gap-2 ${currentTheme.textPrimary}`}>
+              <Chrome size={18} className="text-rose-500" />
+              <span className="text-[10px] font-black uppercase">Google</span>
+            </button>
+            <button className={`h-14 rounded-2xl border-2 ${currentTheme.border} ${currentTheme.card} flex items-center justify-center gap-2 ${currentTheme.textPrimary}`}>
+              <Github size={18} className={darkMode ? 'text-white' : 'text-slate-900'} />
+              <span className="text-[10px] font-black uppercase">Github</span>
+            </button>
+          </div>
+          <div className={`p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10 flex items-start gap-3`}>
+             <ShieldAlert size={16} className="text-blue-500 mt-1 shrink-0" />
+             <p className={`text-[10px] leading-relaxed font-bold ${currentTheme.textSecondary}`}>Güvenlik Notu: Hesabın, kişisel verilerini korumak için 256-bit AES şifreleme ile korunmaktadır.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderWelcomeScreen = () => (
+    <div className={`min-h-screen ${currentTheme.bg} flex flex-col max-w-md mx-auto animate-in fade-in duration-700`}>
+      <header className="px-8 pt-14 pb-6 flex justify-between items-center backdrop-blur-md sticky top-0 z-50">
+        <div className="flex items-center gap-2">
+           <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center text-white"><Zap size={18} fill="white" /></div>
+           <h1 className={`text-xl font-black tracking-tighter ${currentTheme.textPrimary}`}>DÖNÜŞÜM</h1>
+        </div>
+        <button onClick={() => setDarkMode(!darkMode)} className={`p-3 rounded-2xl border ${currentTheme.border} ${currentTheme.card}`}>{darkMode ? <Sun size={20} className="text-amber-400" /> : <Moon size={20} className="text-blue-600" />}</button>
+      </header>
+      <div className="px-8 pb-12 space-y-10 overflow-y-auto no-scrollbar">
+        <section className="mt-8 space-y-6">
+          <div className="flex gap-2">
+            <span className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[9px] font-black text-blue-500 uppercase tracking-widest">v1.8 AI-CORE</span>
+            <span className="px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-[9px] font-black text-teal-500 uppercase tracking-widest">Farkındalık</span>
+          </div>
+          <h2 className={`text-4xl font-black leading-[1.1] tracking-tight ${currentTheme.textPrimary}`}>Hikayeni <span className="text-blue-600">Sanata</span>, Travmanı <span className="text-blue-600">Güce</span> Dönüştür.</h2>
+          <p className={`text-[13px] leading-relaxed font-medium ${currentTheme.textSecondary}`}>Gelişmiş yapay zeka desteği ile deneyimlerini iyileştirici bir güce dönüştür. Toplulukla paylaş veya akademi ile bilgini artır.</p>
+          
+          <div onClick={() => setDailyTipIndex((dailyTipIndex + 1) % dailyTips.length)} className={`${currentTheme.card} ${currentTheme.border} border p-5 rounded-[28px] cursor-pointer active:scale-95 transition-all shadow-lg`}>
+             <div className="flex justify-between items-center mb-3">
+                <div className="flex items-center gap-2">
+                   <div className="w-6 h-6 rounded-lg bg-blue-600/10 text-blue-600 flex items-center justify-center"><Quote size={12} fill="currentColor" /></div>
+                   <span className="text-[9px] font-black uppercase tracking-widest text-blue-500">Günün Notu</span>
+                </div>
+                <HelpCircle size={14} className="text-slate-500" />
+             </div>
+             <p className={`text-[13px] font-bold italic leading-snug ${currentTheme.textPrimary}`}>"{dailyTips[dailyTipIndex]}"</p>
+             <p className="text-[9px] text-slate-500 mt-3 font-bold uppercase tracking-widest animate-pulse">Yeni not için dokun...</p>
+          </div>
+
+          <div className="space-y-3 pt-4">
+            <button onClick={() => setView(isLoggedIn ? 'app' : 'login')} className="w-full h-16 bg-blue-600 text-white rounded-[28px] font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-xl shadow-blue-900/40 active:scale-95 transition-all">Hemen Başla <ChevronRight size={18} /></button>
+            <div className="flex gap-3">
+              <button onClick={() => setView('login')} className={`flex-1 h-14 rounded-[22px] border-2 ${currentTheme.border} ${currentTheme.textPrimary} font-black text-[10px] uppercase flex items-center justify-center gap-2`}>Giriş</button>
+              <button onClick={() => setView('login')} className={`flex-1 h-14 rounded-[22px] border-2 ${currentTheme.border} ${currentTheme.textPrimary} font-black text-[10px] uppercase flex items-center justify-center gap-2`}>Kayıt</button>
+            </div>
+          </div>
+        </section>
+
+        <section className="space-y-4 pb-10">
+           <h3 className={`text-[10px] font-black uppercase tracking-[0.3em] ${currentTheme.textSecondary}`}>Neden Dönüşüm?</h3>
+           <div className="grid grid-cols-1 gap-4">
+              <div className="flex items-start gap-4">
+                 <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center shrink-0"><BrainCircuit size={20} /></div>
+                 <div>
+                    <h4 className={`text-xs font-black ${currentTheme.textPrimary}`}>AI Destekli İyileşme</h4>
+                    <p className={`text-[11px] ${currentTheme.textSecondary}`}>Deneyimlerini analiz eden AI, sana özel başa çıkma stratejileri üretir.</p>
+                 </div>
+              </div>
+              <div className="flex items-start gap-4">
+                 <div className="w-10 h-10 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0"><ShieldCheck size={20} /></div>
+                 <div>
+                    <h4 className={`text-xs font-black ${currentTheme.textPrimary}`}>Güvenli Topluluk</h4>
+                    <p className={`text-[11px] ${currentTheme.textSecondary}`}>Sadece onaylı üyeler ve moderasyon ekibi ile güvenli bir ortam.</p>
+                 </div>
+              </div>
+           </div>
+        </section>
+      </div>
+    </div>
+  );
+
+  const renderAppContent = () => {
     switch (activeTab) {
       case 'anlat':
         return (
-          <div className="p-4 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
-            <style>{`
-              .glass-input {
-                background: ${darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.6)'};
-                backdrop-filter: blur(12px);
-                border: 1px solid ${darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)'};
-                box-shadow: ${darkMode ? 'inset 0 1px 1px rgba(255, 255, 255, 0.05)' : 'none'};
-              }
-              .glass-input:focus {
-                background: ${darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.9)'};
-                border-color: ${darkMode ? 'rgba(139, 92, 246, 0.3)' : 'rgba(99, 102, 241, 0.3)'};
-                box-shadow: 0 0 0 2px ${darkMode ? 'rgba(139, 92, 246, 0.1)' : 'rgba(99, 102, 241, 0.1)'};
-              }
-              
-              .gradient-text {
-                background: ${darkMode ? 'linear-gradient(135deg, #fff 0%, #a5b4fc 100%)' : 'linear-gradient(135deg, #1e1b4b 0%, #4f46e5 100%)'};
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-              }
-
-              .progress-ring-circle {
-                transition: stroke-dashoffset 0.35s;
-                transform: rotate(-90deg);
-                transform-origin: 50% 50%;
-              }
-            `}</style>
-
-            <div className={`relative overflow-hidden rounded-[32px] p-8 transition-all duration-500 group ${darkMode
-                ? 'bg-gradient-to-br from-slate-800/40 to-slate-900/40 border border-white/5 shadow-2xl shadow-black/20'
-                : 'bg-white/70 border border-indigo-50 shadow-xl shadow-indigo-100/50'
-              }`}>
-              <div className="absolute inset-0 bg-grid-white/[0.02] bg-[length:20px_20px]" />
-              <div className={`absolute -right-20 -top-20 w-60 h-60 rounded-full blur-[80px] opacity-20 ${darkMode ? 'bg-violet-500' : 'bg-blue-400'}`} />
-
-              <div className="relative z-10">
-                <h2 className="text-2xl font-bold mb-3 flex items-center gap-2">
-                  <span className="p-2 rounded-xl bg-rose-500/10 text-rose-500"><Heart size={20} className="fill-current" /></span>
-                  <span className="gradient-text">Güvenli Alan</span>
-                </h2>
-                <p className={`text-sm mb-8 leading-relaxed max-w-[90%] ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Hikayen yapay zeka ile sanata dönüşsün. İçindeki gücü keşfetmeye hazır mısın?
-                </p>
-
-                <div className="relative mb-8 group/input">
-                  <textarea
-                    className={`glass-input w-full h-48 rounded-2xl p-5 text-sm resize-none outline-none transition-all placeholder:text-transparent peer ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}
-                    placeholder=" "
-                    value={story}
-                    onChange={(e) => setStory(e.target.value)}
-                  />
-                  <label className={`absolute left-5 top-5 text-sm font-medium transition-all duration-200 pointer-events-none
-                    peer-focus:-translate-y-[12px] peer-focus:scale-90 peer-focus:text-indigo-500
-                    peer-[:not(:placeholder-shown)]:-translate-y-[12px] peer-[:not(:placeholder-shown)]:scale-90
-                    ${darkMode ? 'text-slate-500 peer-focus:text-violet-400' : 'text-slate-400'}
-                  `}>
-                    Düşüncelerini Paylaş...
-                  </label>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <ActionButton
-                    onClick={() => handleAction('story')}
-                    disabled={isAnalyzing || !story}
-                    icon={<BookMarked size={18} />}
-                    label="Hikaye Tasarla"
-                    darkMode={darkMode}
-                    variant="primary"
-                  />
-                  <ActionButton
-                    onClick={() => handleAction('game')}
-                    disabled={isAnalyzing || !story}
-                    icon={<Gamepad2 size={18} />}
-                    label="Oyun Kurgula"
-                    darkMode={darkMode}
-                    variant="secondary"
-                  />
-                </div>
-
-                {isAnalyzing && (
-                  <div className="mt-8 flex flex-col items-center justify-center gap-3 animate-in fade-in zoom-in duration-300">
-                    <div className="relative">
-                      <div className={`absolute inset-0 rounded-full blur ${darkMode ? 'bg-violet-500/50' : 'bg-indigo-500/30'}`} />
-                      <Sparkles size={24} className={`relative z-10 animate-spin-slow ${darkMode ? 'text-violet-300' : 'text-indigo-600'}`} />
+          <div className="p-6 space-y-6 animate-in fade-in slide-in-from-right-10 duration-700 pb-32">
+            {/* Güzel Dokulu Bilgi Alanı */}
+            <div className={`relative overflow-hidden rounded-[32px] p-6 border ${currentTheme.border} ${darkMode ? 'bg-gradient-to-br from-blue-950/40 via-slate-900/40 to-indigo-950/40' : 'bg-gradient-to-br from-blue-50 via-white to-indigo-50'} shadow-inner`}>
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl"></div>
+                
+                <div className="relative z-10 flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-lg shadow-blue-900/20">
+                        <Sparkles size={20} />
                     </div>
-                    <span className={`text-[10px] font-bold uppercase tracking-[0.3em] ${darkMode ? 'text-violet-300' : 'text-indigo-600'} animate-pulse`}>
-                      Analiz Ediliyor...
-                    </span>
-                  </div>
-                )}
-              </div>
+                    <div className="space-y-1">
+                        <h4 className={`text-xs font-black uppercase tracking-widest ${currentTheme.textPrimary}`}>Dönüşüm Rehberi</h4>
+                        <p className={`text-[11px] font-medium leading-relaxed ${currentTheme.textSecondary}`}>
+                            Neler yaşadığını, nasıl hissettiğini detaylıca anlat. Yapay zeka duygularını analiz ederken, anlatın bir sanat eserine veya eğitici bir oyuna evrilecek.
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            {analysisResult && (
-              <div className={`animate-in slide-in-from-bottom-8 duration-700 rounded-[32px] p-1 border backdrop-blur-md overflow-hidden ${darkMode ? 'bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 border-white/10' : 'bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border-indigo-100'
-                }`}>
-                <div className={`rounded-[28px] p-6 h-full ${darkMode ? 'bg-[#1a1825]/90' : 'bg-white/80'}`}>
-                  <div className="flex items-start gap-4 mb-6">
-                    <div className={`p-4 rounded-2xl shadow-lg rotate-3 transition-transform hover:rotate-6 ${darkMode ? 'bg-[#2a2638] text-violet-400' : 'bg-indigo-50 text-indigo-600'}`}>
-                      {analysisResult.type === 'story' ? <BookMarked size={28} /> : <Trophy size={28} />}
+            <div className={`${currentTheme.card} ${currentTheme.border} rounded-[36px] p-7 border shadow-2xl relative overflow-hidden transition-all duration-500 ${isFocused ? 'ring-4 ring-blue-600/20 scale-[1.01]' : ''}`}>
+              {isAnalyzing ? (
+                <div className="h-72 flex flex-col items-center justify-center space-y-6 animate-in zoom-in duration-500">
+                    <div className="relative">
+                        <div className="w-24 h-24 rounded-full border-4 border-blue-600/20 border-t-blue-600 animate-spin"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            {analysisType === 'story' ? <PenTool size={32} className="text-blue-500 animate-bounce" /> : <Gamepad2 size={32} className="text-indigo-500 animate-bounce" />}
+                        </div>
                     </div>
-                    <div>
-                      <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                        {analysisResult.type === 'story' ? "Hikaye Taslağı Hazır" : "Oyun Mekaniği Oluşturuldu"}
-                      </h3>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        <Badge text={analysisResult.category} color="indigo" darkMode={darkMode} />
-                        <Badge text={analysisResult.sentiment} color="emerald" darkMode={darkMode} />
-                      </div>
+                    <div className="text-center">
+                        <p className={`text-sm font-black uppercase tracking-widest ${currentTheme.textPrimary}`}>Dönüşüm Başlıyor...</p>
+                        <p className={`text-[10px] font-bold ${currentTheme.textSecondary} mt-1`}>AI senin için {analysisType === 'story' ? 'hikaye' : 'oyun'} örüyor.</p>
                     </div>
-                  </div>
-
-                  <p className={`text-sm mb-8 leading-relaxed ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                    {analysisResult.suggestion}
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <button className={`py-4 rounded-2xl font-bold text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all ${darkMode ? 'bg-white/5 hover:bg-white/10 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                      }`}>
-                      <Search size={16} /> Önizle
-                    </button>
-                    <button className={`py-4 rounded-2xl font-bold text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-indigo-500/20 ${darkMode ? 'bg-indigo-600 hover:bg-indigo-500 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                      }`}>
-                      Devam Et <ChevronRight size={16} />
-                    </button>
-                  </div>
+                    <button onClick={() => setIsAnalyzing(false)} className="px-6 py-2 rounded-xl bg-slate-800/50 text-[10px] font-black uppercase tracking-widest text-slate-400">İptal Et</button>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="animate-in slide-in-from-top-4 duration-500">
+                   <div className="relative pt-2 mb-8 group">
+                     <textarea 
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        placeholder="Kalbinden geçenleri buraya yaz..."
+                        className={`w-full h-52 rounded-[28px] p-6 border-2 ${currentTheme.border} bg-transparent outline-none text-sm leading-relaxed ${currentTheme.textPrimary} focus:border-blue-600 transition-all duration-300 resize-none`}
+                        value={story}
+                        maxLength={2000}
+                        onChange={(e) => setStory(e.target.value)}
+                     />
+                     
+                     {/* Karakter Sayacı */}
+                     <div className="absolute bottom-4 right-6 flex items-center gap-3">
+                        <div className={`text-[9px] font-black uppercase tracking-widest ${story.length >= 1800 ? 'text-rose-500' : 'text-slate-500'}`}>
+                           {story.length} / 2000
+                        </div>
+                        <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${story.length > 50 ? 'bg-green-500/10 text-green-500' : 'bg-slate-500/10 text-slate-500'}`}>
+                           {story.length > 0 ? 'Yazıyor' : 'Hazır'}
+                        </div>
+                     </div>
+                   </div>
+
+                   <div className="flex flex-col gap-4">
+                    <button 
+                      onClick={() => handleAction('story')} 
+                      className="group relative h-16 rounded-3xl font-black text-[11px] uppercase tracking-[0.25em] text-white bg-blue-600 shadow-xl shadow-blue-900/40 active:scale-95 transition-all flex items-center justify-center overflow-hidden"
+                    >
+                      <span className="group-hover:opacity-0 transition-opacity duration-300 flex items-center gap-3">
+                        <Sparkles size={18} /> Hikayeye Dönüştür
+                      </span>
+                      <div className="absolute inset-0 flex items-center justify-center translate-y-12 group-hover:translate-y-0 transition-transform duration-300">
+                        <PenTool size={28} className="text-white drop-shadow-lg" />
+                      </div>
+                    </button>
+                    
+                    <button 
+                      onClick={() => handleAction('game')} 
+                      className={`group relative h-16 rounded-3xl font-black text-[11px] uppercase tracking-[0.25em] text-white ${currentTheme.buttonSecondary} active:scale-95 transition-all flex items-center justify-center overflow-hidden`}
+                    >
+                       <span className="group-hover:opacity-0 transition-opacity duration-300 flex items-center gap-3">
+                         <Gamepad2 size={18} /> Oyuna Dönüştür
+                       </span>
+                       <div className="absolute inset-0 flex items-center justify-center translate-y-12 group-hover:translate-y-0 transition-transform duration-300">
+                        <Trophy size={28} className="text-indigo-400 drop-shadow-lg" />
+                      </div>
+                    </button>
+                   </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+                <div className={`${currentTheme.card} ${currentTheme.border} border p-5 rounded-3xl flex flex-col gap-3`}>
+                    <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center"><Lightbulb size={20} /></div>
+                    <p className={`text-[10px] font-black uppercase tracking-widest ${currentTheme.textSecondary}`}>Öneri</p>
+                    <p className={`text-xs font-bold leading-tight ${currentTheme.textPrimary}`}>Sessiz kalmak değil, sanatı kalkan yapmak seni güçlendirir.</p>
+                </div>
+                <div className={`${currentTheme.card} ${currentTheme.border} border p-5 rounded-3xl flex flex-col gap-3`}>
+                    <div className="w-10 h-10 rounded-2xl bg-teal-500/10 text-teal-500 flex items-center justify-center"><ShieldCheck size={20} /></div>
+                    <p className={`text-[10px] font-black uppercase tracking-widest ${currentTheme.textSecondary}`}>Güvenlik</p>
+                    <p className={`text-xs font-bold leading-tight ${currentTheme.textPrimary}`}>Tüm paylaşımların %100 anonim ve uçtan uca şifrelidir.</p>
+                </div>
+            </div>
           </div>
         );
 
       case 'topluluk':
         return (
-          <div className="p-4 space-y-6 animate-in fade-in duration-500 pb-24">
-            <div className="flex justify-between items-center mb-4 px-2">
-              <h2 className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-900'}`}>Keşfet</h2>
-              <button className={`p-2 rounded-xl transition-colors ${darkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
-                <Filter size={20} />
-              </button>
+          <div className="p-6 space-y-6 animate-in fade-in slide-in-from-right-10 duration-700 pb-40">
+            <div className="flex justify-between items-center px-2">
+              <h2 className={`text-2xl font-black tracking-tight ${currentTheme.textPrimary}`}>Keşfet</h2>
+              <div className="flex gap-2 bg-slate-800/30 p-1.5 rounded-2xl border border-white/5">
+                {['all', 'story', 'game'].map(t => (
+                   <button 
+                    key={t}
+                    onClick={() => setFilterType(t)}
+                    className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase transition-all ${filterType === t ? 'bg-blue-600 text-white' : 'text-slate-500'}`}
+                   >
+                     {t === 'all' ? 'Hepsi' : t === 'story' ? 'Hikaye' : 'Oyun'}
+                   </button>
+                ))}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-6">
-              {communityWorks.map((work) => (
-                <div key={work.id} className={`group relative rounded-[32px] overflow-hidden transition-all duration-500 hover:-translate-y-1 ${darkMode ? 'bg-[#1e1b2e] border border-white/5' : 'bg-white border border-slate-100 shadow-xl shadow-slate-200/50'
-                  }`}>
-                  <div onClick={() => awardXP(50, "İçerik İncelendi")} className="cursor-pointer">
-                    <div className={`absolute top-0 right-0 p-8 opacity-10 transition-transform group-hover:scale-110 group-hover:rotate-12 ${work.type === 'story' ? (darkMode ? 'text-pink-500' : 'text-pink-600') : (darkMode ? 'text-cyan-500' : 'text-cyan-600')
-                      }`}>
-                      {work.type === 'story' ? <BookOpen size={100} /> : <Gamepad2 size={100} />}
-                    </div>
-
-                    <div className="p-7 relative z-10">
-                      <div className="flex justify-between items-start mb-6">
-                        <span className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest border ${work.type === 'story'
-                            ? (darkMode ? 'bg-pink-500/10 border-pink-500/20 text-pink-400' : 'bg-pink-50 border-pink-100 text-pink-600')
-                            : (darkMode ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400' : 'bg-cyan-50 border-cyan-100 text-cyan-600')
-                          }`}>
-                          {work.type === 'story' ? 'Hikaye' : 'Oyun'}
-                        </span>
-                        <div className="flex items-center gap-3 text-xs font-bold opacity-60">
-                          <span className="flex items-center gap-1"><Eye size={14} /> {work.views}</span>
-                          <span className="flex items-center gap-1"><Heart size={14} /> {work.likes}</span>
+              {filteredWorks.map((work) => (
+                <div key={work.id} className={`${currentTheme.card} ${currentTheme.border} rounded-[32px] border overflow-hidden shadow-2xl transition-all`}>
+                  <div className="p-7">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500"><Fingerprint size={18} /></div>
+                        <div>
+                           <p className={`text-[11px] font-black ${currentTheme.textPrimary}`}>@{work.author}</p>
+                           <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{work.time}</p>
                         </div>
                       </div>
-
-                      <h3 className={`text-xl font-bold mb-2 leading-snug ${darkMode ? 'text-slate-100' : 'text-slate-900'}`}>{work.title}</h3>
-                      <p className={`text-xs font-medium uppercase tracking-wide mb-4 ${darkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
-                        {work.author}
-                      </p>
-
-                      <p className={`text-sm mb-6 leading-relaxed line-clamp-2 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                        {work.preview}
-                      </p>
-
-                      <button className={`w-full py-4 rounded-2xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${darkMode
-                          ? 'bg-slate-800 hover:bg-slate-700 text-white'
-                          : 'bg-slate-900 hover:bg-slate-800 text-white shadow-lg shadow-slate-900/20'
-                        }`}>
-                        İncele <ChevronRight size={14} />
-                      </button>
+                      <div className="flex gap-2">
+                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-blue-500/30 text-blue-500 bg-blue-500/5`}>
+                          {work.type === 'story' ? 'HİKAYE' : 'OYUN'}
+                        </span>
+                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${work.type === 'story' ? 'border-purple-500/30 text-purple-500 bg-purple-500/5' : 'border-indigo-500/30 text-indigo-500 bg-indigo-500/5'}`}>
+                          {work.category}
+                        </span>
+                      </div>
                     </div>
+
+                    <h3 className={`text-lg font-bold mb-2 tracking-tight ${currentTheme.textPrimary}`}>{work.title}</h3>
+                    <p className={`text-xs mb-5 leading-relaxed ${currentTheme.textSecondary}`}>{work.preview}</p>
+                    
+                    <div className="flex gap-6 mb-6">
+                        <div className="flex items-center gap-2 text-slate-500"><Eye size={14} /> <span className="text-[10px] font-bold tracking-widest">{work.views}</span></div>
+                        <div className="flex items-center gap-2 text-slate-500"><Heart size={14} /> <span className="text-[10px] font-bold tracking-widest">{work.likes}</span></div>
+                        <div className="flex items-center gap-2 text-blue-500"><TrendingUp size={14} /> <span className="text-[10px] font-bold tracking-widest">%12 Artış</span></div>
+                    </div>
+
+                    {expandedWork === work.id && (
+                      <div className="mb-6 pt-6 border-t border-slate-800/40 animate-in slide-in-from-top-4 duration-500 space-y-5">
+                        <div className="p-5 rounded-2xl bg-blue-600/5 border border-blue-600/10 space-y-3">
+                           <div className="flex items-center gap-2 text-blue-500"><BrainCircuit size={16} /> <span className="text-[10px] font-black uppercase tracking-widest">AI Analizi</span></div>
+                           <p className={`text-xs leading-relaxed italic ${currentTheme.textPrimary}`}>{work.aiOverview}</p>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                            <div className="text-center p-3 rounded-xl bg-slate-800/20 border border-white/5">
+                                <p className="text-[16px] font-black text-blue-500">%{work.stats.empathy}</p>
+                                <p className="text-[8px] font-bold text-slate-500 uppercase">Empati</p>
+                            </div>
+                            <div className="text-center p-3 rounded-xl bg-slate-800/20 border border-white/5">
+                                <p className="text-[16px] font-black text-purple-500">%{work.stats.courage}</p>
+                                <p className="text-[8px] font-bold text-slate-500 uppercase">Cesaret</p>
+                            </div>
+                            <div className="text-center p-3 rounded-xl bg-slate-800/20 border border-white/5">
+                                <p className="text-[16px] font-black text-teal-500">%{work.stats.impact}</p>
+                                <p className="text-[8px] font-bold text-slate-500 uppercase">Etki</p>
+                            </div>
+                        </div>
+
+                        <div className="p-4 rounded-2xl border-2 border-dashed border-slate-800/50">
+                           <p className={`text-[11px] leading-relaxed ${currentTheme.textSecondary}`}>{work.fullContent}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <button 
+                      onClick={() => setExpandedWork(expandedWork === work.id ? null : work.id)}
+                      className={`w-full h-14 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] border-2 ${currentTheme.border} ${currentTheme.textPrimary} active:scale-95 transition-all flex items-center justify-center gap-3`}
+                    >
+                      {expandedWork === work.id ? 'Daralt' : 'Ayrıntılı İncele'} <ChevronRight size={16} className={expandedWork === work.id ? '-rotate-90' : ''} />
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
-
-            <button className={`w-full py-5 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-2 transition-all group ${darkMode
-                ? 'border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/5 hover:border-indigo-500/50'
-                : 'border-indigo-200 text-indigo-500 hover:bg-indigo-50 hover:border-indigo-300'
-              }`}>
-              <PlusCircle size={24} className="group-hover:scale-110 transition-transform" />
-              <span className="text-xs font-bold uppercase tracking-widest">Kendi Dönüşümünü Ekle</span>
-            </button>
           </div>
         );
 
       case 'ogren':
         return (
-          <div className="p-4 space-y-6 animate-in fade-in duration-500">
-            <div className={`rounded-[40px] p-8 overflow-hidden relative shadow-2xl transition-all ${darkMode
-                ? 'bg-gradient-to-br from-indigo-900 via-violet-900 to-slate-900 text-white'
-                : 'bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-blue-500/30'
-              }`}>
-              <div className="relative z-10">
-                <span className="inline-block px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[10px] font-bold uppercase tracking-widest mb-4">
-                  Eğitim Modülü
-                </span>
-                <h2 className="text-4xl font-black mb-3 tracking-tight">Akademi</h2>
-                <p className="opacity-90 text-sm font-medium leading-relaxed max-w-[80%]">Uzmanlar tarafından hazırlanan içeriklerle farkındalığını artır.</p>
+          <div className="p-6 space-y-6 animate-in fade-in slide-in-from-right-10 duration-700 pb-40">
+            <div className={`rounded-[40px] p-10 text-white relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-700 to-indigo-950 shadow-2xl shadow-blue-900/30`}>
+              <div className="absolute top-0 right-0 opacity-10 pointer-events-none">
+                 <div className="w-64 h-64 border-[20px] border-white rounded-full -mr-20 -mt-20"></div>
+                 <div className="w-40 h-40 border-[10px] border-white rounded-full -mr-10 -mt-10"></div>
               </div>
-              <Info size={200} className="absolute -right-12 -bottom-12 opacity-10 rotate-12" />
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-[80px] rounded-full mix-blend-overlay" />
+              
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-4">
+                    <Compass size={24} className="text-blue-200" />
+                    <span className="px-3 py-1 rounded-full bg-white/10 text-[9px] font-black uppercase tracking-widest">Rehber</span>
+                </div>
+                <h2 className="text-4xl font-black mb-1 tracking-tighter text-white">AKADEMİ</h2>
+                <p className="opacity-80 text-[10px] font-bold uppercase tracking-[0.2em] text-white underline decoration-blue-400 decoration-2 underline-offset-4">Seni güçlendirecek 10 derin modül</p>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
-              <InfoCard
-                title="Siber Zorbalık"
-                subtitle="Dijital Güvenlik"
-                desc="Çevrimiçi dünyada sınırlarını koru ve güvende kal."
-                icon={<Zap />}
-                colorClass="text-amber-400"
-                darkMode={darkMode}
-              />
-              <InfoCard
-                title="Sözel Zorbalık"
-                subtitle="Etkili İletişim"
-                desc="Kelimelerin gücünü doğru kullanmayı öğren."
-                icon={<MessageCircle />}
-                colorClass="text-emerald-400"
-                darkMode={darkMode}
-              />
-              <InfoCard
-                title="Psikolojik Zorbalık"
-                subtitle="Duygusal Zeka"
-                desc="Zihinsel dayanıklılığını artır ve güçlen."
-                icon={<Star />}
-                colorClass="text-rose-400"
-                darkMode={darkMode}
-              />
-            </div>
-          </div>
-        );
-
-      case 'profil':
-        const progressPercent = (userStats.xp / userStats.nextLevelXp) * 100;
-        const circumference = 2 * Math.PI * 52; // r=52
-        const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
-
-        return (
-          <div className="p-4 space-y-6 animate-in fade-in duration-500 pb-24">
-            {/* Profile Header Card */}
-            <div className={`relative rounded-[40px] p-8 overflow-hidden shadow-2xl ${darkMode
-                ? 'bg-gradient-to-tr from-violet-900 to-indigo-900'
-                : 'bg-gradient-to-tr from-indigo-500 to-purple-600'
-              }`}>
-              {/* Background Decor */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-[60px] rounded-full -translate-y-1/2 translate-x-1/2" />
-
-              <div className="relative z-10 flex flex-col items-center">
-                <div className="relative mb-6">
-                  {/* Progress Circle SVG */}
-                  <div className="w-32 h-32 relative">
-                    <svg className="w-full h-full transform -rotate-90">
-                      <circle
-                        stroke="currentColor"
-                        strokeWidth="8"
-                        fill="transparent"
-                        r="52"
-                        cx="64"
-                        cy="64"
-                        className="text-black/20"
-                      />
-                      <circle
-                        stroke="currentColor"
-                        strokeWidth="8"
-                        fill="transparent"
-                        r="52"
-                        cx="64"
-                        cy="64"
-                        className="text-white transition-all duration-1000 ease-out"
-                        strokeDasharray={circumference}
-                        strokeDashoffset={strokeDashoffset}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-white text-indigo-900 p-3 rounded-2xl shadow-lg">
-                        <Trophy size={32} />
+              {academyModules.map(module => {
+                const IconComponent = module.icon;
+                return (
+                  <div 
+                      key={module.id} 
+                      className={`p-6 rounded-[32px] border shadow-xl transition-all cursor-pointer group ${currentTheme.card} ${currentTheme.border}`} 
+                      onClick={() => setExpandedAcademy(expandedAcademy === module.id ? null : module.id)}
+                  >
+                    <div className="flex items-center gap-5">
+                      <div className={`w-14 h-14 rounded-2xl bg-slate-800/10 flex items-center justify-center ${module.color} group-hover:scale-110 transition-transform`}>
+                          <IconComponent size={24} />
                       </div>
+                      <div className="flex-1">
+                        <h4 className={`font-bold text-base tracking-tight ${currentTheme.textPrimary}`}>{module.title}</h4>
+                        <p className={`text-[10px] font-medium uppercase tracking-wider ${currentTheme.textSecondary}`}>{module.desc}</p>
+                      </div>
+                      <ChevronDown size={22} className={`text-slate-600 transition-transform ${expandedAcademy === module.id ? 'rotate-180 text-blue-500' : ''}`} />
                     </div>
-                  </div>
-                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-full border border-white/20 whitespace-nowrap shadow-lg">
-                    Seviye {userStats.level}
-                  </div>
-                </div>
+                    
+                    {expandedAcademy === module.id && (
+                      <div className="mt-8 pt-6 border-t border-slate-800/40 animate-in slide-in-from-top-6 duration-500 space-y-8">
+                        <div className="space-y-3">
+                          <p className={`text-[10px] font-black uppercase tracking-widest text-blue-500 flex items-center gap-2`}><Info size={14} /> Modül Özeti</p>
+                          <p className={`text-[13px] leading-relaxed font-bold ${currentTheme.textPrimary}`}>{module.details}</p>
+                          <p className={`text-[12px] leading-relaxed ${currentTheme.textSecondary}`}>{module.fullDeep}</p>
+                        </div>
 
-                <h2 className="text-2xl font-bold text-white mb-1">{userStats.title}</h2>
-                <p className="text-indigo-200 text-xs font-medium uppercase tracking-widest mb-6">
-                  {userStats.xp} / {userStats.nextLevelXp} XP
-                </p>
+                        <div className="grid grid-cols-1 gap-4">
+                           <div className="p-5 rounded-2xl bg-teal-500/5 border border-teal-500/10">
+                              <p className="text-[9px] font-black uppercase text-teal-500 tracking-widest mb-3 flex items-center gap-2"><Target size={14} /> Kritik Uygulama Adımları</p>
+                              <ul className="space-y-3">
+                                  {module.tips.map((tip, i) => (
+                                    <li key={i} className={`text-[11px] font-bold flex items-start gap-2 ${currentTheme.textPrimary}`}>
+                                      <CheckCircle2 size={12} className="mt-0.5 shrink-0 text-teal-500" />
+                                      {tip}
+                                    </li>
+                                  ))}
+                              </ul>
+                           </div>
+                           <div className="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/10">
+                              <p className="text-[9px] font-black uppercase text-amber-500 tracking-widest mb-3 flex items-center gap-2"><AlertCircle size={14} /> Vaka Analizi & Senaryo</p>
+                              <p className={`text-[11px] italic leading-relaxed ${currentTheme.textSecondary}`}>{module.cases}</p>
+                           </div>
+                           <div className="p-5 rounded-2xl bg-indigo-500/5 border border-indigo-500/10">
+                              <p className="text-[9px] font-black uppercase text-indigo-500 tracking-widest mb-3 flex items-center gap-2"><BookCopy size={14} /> Ek Kaynaklar</p>
+                              <div className="flex flex-wrap gap-2">
+                                {module.resources.map((res, i) => (
+                                  <span key={i} className="px-2 py-1 rounded-lg bg-indigo-500/10 text-indigo-500 text-[9px] font-black uppercase">{res}</span>
+                                ))}
+                              </div>
+                           </div>
+                        </div>
 
-                {/* Mini Stats */}
-                <div className="flex gap-4 w-full justify-center">
-                  <div className="bg-black/20 backdrop-blur-md rounded-2xl p-3 flex-1 text-center border border-white/10">
-                    <p className="text-2xl font-black text-white">{userStats.storiesRead}</p>
-                    <p className="text-[9px] text-indigo-200 uppercase tracking-wider">Hikaye</p>
+                        <button className="w-full py-5 bg-blue-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest active:scale-95 transition-all shadow-lg shadow-blue-900/20 flex items-center justify-center gap-3">
+                           Sınava Gir & Sertifika Al <ArrowRight size={16} />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <div className="bg-black/20 backdrop-blur-md rounded-2xl p-3 flex-1 text-center border border-white/10">
-                    <p className="text-2xl font-black text-white">{userStats.gamesPlayed}</p>
-                    <p className="text-[9px] text-indigo-200 uppercase tracking-wider">Oyun</p>
-                  </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
-
-            {/* Badges Section */}
-            <div>
-              <h3 className={`text-lg font-bold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                <Award size={20} className="text-indigo-500" />
-                Rozetlerin
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                {userStats.badges.map(badge => (
-                  <div key={badge.id} className={`p-4 rounded-3xl border flex items-center gap-4 transition-all ${darkMode
-                      ? (badge.unlocked ? 'bg-[#1e1b2e] border-indigo-500/30' : 'bg-[#1a1825]/50 border-white/5 opacity-50 grayscale')
-                      : (badge.unlocked ? 'bg-white border-indigo-100 shadow-lg shadow-indigo-100/50' : 'bg-slate-50 border-slate-100 opacity-60 grayscale')
-                    }`}>
-                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${badge.unlocked ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : 'bg-slate-200 text-slate-400'
-                      }`}>
-                      {badge.icon}
-                    </div>
-                    <div>
-                      <h4 className={`text-xs font-bold ${darkMode ? 'text-slate-200' : 'text-slate-900'}`}>{badge.name}</h4>
-                      <span className={`text-[9px] font-medium uppercase tracking-wider ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                        {badge.unlocked ? 'Kazanıldı' : 'Kilitli'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Weekly Activity Chart Mockup */}
-            <div className={`p-6 rounded-[32px] border ${darkMode ? 'bg-[#1e1b2e] border-white/5' : 'bg-white border-slate-100 shadow-lg shadow-slate-200/50'}`}>
-              <div className="flex justify-between items-end mb-6">
-                <div>
-                  <h3 className={`text-lg font-bold mb-1 ${darkMode ? 'text-white' : 'text-slate-900'}`}>Haftalık Aktivite</h3>
-                  <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Son 7 gün performansı</p>
-                </div>
-                <TrendingUp className="text-emerald-500" size={24} />
-              </div>
-              <div className="flex items-end justify-between gap-2 h-24">
-                {[40, 70, 30, 85, 50, 65, 90].map((h, i) => (
-                  <div key={i} className="w-full flex flex-col justify-end gap-2 group">
-                    <div
-                      className={`w-full rounded-lg transition-all duration-1000 ${darkMode ? 'bg-indigo-500/20 group-hover:bg-indigo-500' : 'bg-indigo-100 group-hover:bg-indigo-500'}`}
-                      style={{ height: `${h}%` }}
-                    ></div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex justify-between mt-3 text-[10px] font-bold uppercase text-slate-500">
-                <span>Pzt</span><span>Sal</span><span>Çar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>
-              </div>
-            </div>
-
           </div>
         );
-
       default: return null;
     }
   };
 
+  // --- VIEW ROUTER ---
+  if (view === 'login') return renderLoginScreen();
+  if (view === 'welcome') return renderWelcomeScreen();
+
   return (
-    <div className={`min-h-screen font-sans flex flex-col max-w-[480px] mx-auto shadow-2xl overflow-hidden transition-colors duration-700 relative ${darkMode ? 'bg-[#0f0e13] text-slate-200' : 'bg-[#fafafa] text-slate-800'
-      }`}>
-      {/* Background Ambience */}
-      <div className={`fixed inset-0 pointer-events-none transition-opacity duration-1000 ${darkMode ? 'opacity-100' : 'opacity-0'}`}>
-        <div className="absolute top-[-10%] left-[-20%] w-[500px] h-[500px] rounded-full bg-violet-900/20 blur-[100px]" />
-        <div className="absolute bottom-[-10%] right-[-20%] w-[500px] h-[500px] rounded-full bg-indigo-900/20 blur-[100px]" />
-      </div>
+    <div className={`min-h-screen font-sans flex flex-col max-w-md mx-auto shadow-2xl overflow-hidden transition-all duration-1000 ${currentTheme.bg}`}>
+      {/* App Header */}
+      <header className="px-9 pt-16 pb-6 flex justify-between items-center z-50 sticky top-0 backdrop-blur-md">
+        <div onClick={() => setView('welcome')} className="cursor-pointer group flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-900/40 group-active:scale-90 transition-transform">
+             <Home size={20} />
+          </div>
+          <h1 className={`text-xl font-black tracking-tighter ${currentTheme.textPrimary} uppercase`}>Dönüşüm</h1>
+        </div>
 
-      {notification && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-top-4 fade-in duration-300">
-          <div className={`flex items-center gap-4 px-6 py-4 rounded-2xl shadow-2xl border backdrop-blur-xl ${darkMode ? 'bg-indigo-900/80 border-indigo-500/30' : 'bg-white/90 border-indigo-100'
-            }`}>
-            <div className={`p-2 rounded-xl ${darkMode ? 'bg-indigo-500' : 'bg-indigo-100 text-indigo-600'}`}>
-              {notification.type === 'levelup' ? <Trophy size={20} className="animate-bounce" /> : <Zap size={20} />}
-            </div>
-            <div>
-              <h4 className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-slate-900'}`}>{notification.title}</h4>
-              <p className={`text-xs ${darkMode ? 'text-indigo-200' : 'text-slate-500'}`}>{notification.message}</p>
-            </div>
+        <div className="flex items-center gap-2 relative">
+          <button onClick={() => setDarkMode(!darkMode)} className={`w-12 h-12 rounded-[18px] flex items-center justify-center border-2 ${currentTheme.card} ${currentTheme.border} active:scale-95 transition-all`}>
+            {darkMode ? <Sun size={20} className="text-amber-400" /> : <Moon size={20} className="text-blue-600" />}
+          </button>
+          
+          <div className="relative">
+            <button onClick={() => setShowProfileMenu(!showProfileMenu)} className={`w-12 h-12 rounded-[18px] flex items-center justify-center border-2 border-blue-500/40 bg-blue-500/10 text-blue-500 active:scale-95 transition-all`}>
+              <User size={22} />
+            </button>
+            {showProfileMenu && (
+               <div className={`absolute top-14 right-0 w-48 rounded-3xl border-2 p-2 shadow-2xl animate-in fade-in zoom-in-95 duration-200 z-[100] ${currentTheme.card} ${currentTheme.border}`}>
+                  <div className="p-4 border-b border-slate-800/40 mb-1">
+                    <p className={`text-[10px] font-black uppercase tracking-widest ${currentTheme.textSecondary}`}>Profil</p>
+                    <p className={`text-sm font-bold truncate ${currentTheme.textPrimary}`}>Kullanıcı #2841</p>
+                  </div>
+                  <button onClick={() => setView('welcome')} className={`w-full text-left p-3 rounded-2xl flex items-center gap-3 text-[11px] font-bold text-rose-500 hover:bg-rose-500/10 transition-colors`}>
+                    <LogOut size={16} /> Çıkış Yap
+                  </button>
+               </div>
+            )}
           </div>
         </div>
-      )}
-
-      {/* Header */}
-      <header className={`relative z-50 px-6 pt-12 pb-4 flex justify-between items-center transition-all duration-500 ${darkMode ? 'bg-[#0f0e13]/80 backdrop-blur-xl border-b border-white/5' : 'bg-white/80 backdrop-blur-xl border-b border-slate-100'
-        }`}>
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className={`w-2 h-2 rounded-full ${darkMode ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-green-500'}`} />
-            <span className={`text-[10px] font-bold uppercase tracking-[0.2em] ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>AI Powered</span>
-          </div>
-          <h1 className={`text-2xl font-black tracking-tighter flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-            DÖNÜŞÜM
-            <span className={`text-3xl ${darkMode ? 'text-violet-500' : 'text-indigo-600'}`}>.</span>
-          </h1>
-        </div>
-        <button
-          onClick={toggleDarkMode}
-          className={`p-3 rounded-full transition-all active:scale-90 hover:rotate-12 ${darkMode
-              ? 'bg-white/5 text-yellow-300 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(253,224,71,0.2)]'
-              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-        >
-          {darkMode ? <Sun size={20} fill="currentColor" className="opacity-90" /> : <Moon size={20} />}
-        </button>
       </header>
 
-      {/* Main Content */}
-      <main className="relative z-10 flex-1 overflow-y-auto no-scrollbar pb-32 pt-2">
-        {renderTabContent()}
+      <main className="flex-1 overflow-y-auto no-scrollbar relative">
+        {renderAppContent()}
       </main>
 
-      {/* Navigation */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[440px] z-50">
-        <nav className={`rounded-[32px] p-2 flex items-center justify-between transition-all duration-500 shadow-2xl ${darkMode
-            ? 'bg-[#1a1825]/90 border border-white/10 shadow-black/50 backdrop-blur-xl'
-            : 'bg-white/90 border border-white/20 shadow-indigo-900/10 backdrop-blur-xl'
-          }`}>
+      <div className="fixed bottom-9 left-1/2 -translate-x-1/2 w-[92%] max-w-[380px] z-50">
+        <nav className={`rounded-[35px] border-2 p-2.5 flex items-center justify-between shadow-2xl backdrop-blur-2xl ${darkMode ? 'bg-[#0A0F16]/85 border-white/5 shadow-black' : 'bg-white/85 border-slate-200'}`}>
           <NavButton active={activeTab === 'anlat'} onClick={() => setActiveTab('anlat')} icon={<PlusCircle />} label="Anlat" darkMode={darkMode} />
-          <NavButton active={activeTab === 'topluluk'} onClick={() => setActiveTab('topluluk')} icon={<Users />} label="Topluluk" darkMode={darkMode} />
-          <NavButton active={activeTab === 'ogren'} onClick={() => setActiveTab('ogren')} icon={<Info />} label="Akademi" darkMode={darkMode} />
-          <NavButton active={activeTab === 'profil'} onClick={() => setActiveTab('profil')} icon={<User />} label="Profil" darkMode={darkMode} />
+          <NavButton active={activeTab === 'topluluk'} onClick={() => setActiveTab('topluluk')} icon={<Compass />} label="Keşfet" darkMode={darkMode} />
+          <NavButton active={activeTab === 'ogren'} onClick={() => setActiveTab('ogren')} icon={<BookOpen />} label="Akademi" darkMode={darkMode} />
         </nav>
       </div>
     </div>
   );
 };
 
-const NavButton = ({ active, onClick, icon, label, darkMode }) => {
-  return (
-    <button
-      onClick={onClick}
-      className={`relative flex-1 group flex flex-col items-center justify-center p-3 rounded-[24px] transition-all duration-300 ${active
-          ? ''
-          : 'hover:bg-black/5 dark:hover:bg-white/5'
-        }`}
-    >
-      {active && (
-        <span className={`absolute inset-0 rounded-[24px] transition-all duration-300 ${darkMode ? 'bg-violet-600 shadow-[0_0_20px_rgba(124,58,237,0.3)]' : 'bg-indigo-600 shadow-lg shadow-indigo-200'
-          }`} />
-      )}
-      <div className={`relative z-10 transition-all duration-300 ${active
-          ? 'text-white -translate-y-0.5'
-          : (darkMode ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-400 group-hover:text-slate-600')
-        }`}>
-        {React.cloneElement(icon, { size: 24, strokeWidth: active ? 2.5 : 2 })}
-      </div>
-      {active && (
-        <span className="absolute bottom-2 w-1 h-1 rounded-full bg-white animate-pulse" />
-      )}
-    </button>
-  );
-};
-
-const ActionButton = ({ onClick, disabled, icon, label, darkMode, variant }) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className={`group relative h-14 rounded-2xl flex items-center justify-center gap-3 font-bold text-xs uppercase tracking-wider overflow-hidden transition-all duration-300 transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed ${variant === 'primary'
-        ? (darkMode ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-900/20' : 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow-lg shadow-indigo-200')
-        : (darkMode ? 'bg-white/5 hover:bg-white/10 text-white border border-white/10' : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-sm')
-      }`}
-  >
-    <div className="absolute inset-0 bg-white/20 translate-y-full transition-transform duration-300 group-hover:translate-y-0" />
-    <span className="relative z-10">{icon}</span>
-    <span className="relative z-10">{label}</span>
+const NavButton = ({ active, onClick, icon, label, darkMode }) => (
+  <button onClick={onClick} className={`group flex items-center justify-center gap-2.5 py-4 px-6 rounded-full transition-all duration-500 flex-1 ${active ? 'bg-blue-600 text-white shadow-2xl shadow-blue-900/50' : (darkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600')}`}>
+    <div className={`transition-transform duration-500 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>{React.cloneElement(icon, { size: 22 })}</div>
+    {active && <span className="text-[12px] font-black uppercase tracking-wider animate-in slide-in-from-left-4">{label}</span>}
   </button>
 );
-
-const Badge = ({ text, color, darkMode }) => {
-  const styles = {
-    indigo: darkMode ? 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20' : 'bg-indigo-50 text-indigo-600 border-indigo-100',
-    emerald: darkMode ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border-emerald-100',
-  };
-
-  return (
-    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest border ${styles[color] || styles.indigo}`}>
-      {text}
-    </span>
-  );
-};
-
-const InfoCard = ({ title, subtitle, desc, icon, colorClass, darkMode }) => {
-  return (
-    <div className={`p-5 rounded-[28px] border transition-all duration-300 hover:scale-[1.02] group ${darkMode
-        ? 'bg-[#1e1b2e] border-white/5 hover:border-white/10'
-        : 'bg-white border-slate-100 hover:border-indigo-100 shadow-sm hover:shadow-md'
-      }`}>
-      <div className="flex items-start gap-4">
-        <div className={`p-3 rounded-2xl ${darkMode ? 'bg-white/5' : 'bg-slate-50'} ${colorClass}`}>
-          {React.cloneElement(icon, { size: 24 })}
-        </div>
-        <div>
-          <span className={`text-[10px] font-bold uppercase tracking-widest block mb-1 opacity-60 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-            {subtitle}
-          </span>
-          <h4 className={`text-base font-bold mb-1 ${darkMode ? 'text-slate-200' : 'text-slate-800'}`}>
-            {title}
-          </h4>
-          <p className={`text-xs leading-relaxed ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{desc}</p>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default App;
